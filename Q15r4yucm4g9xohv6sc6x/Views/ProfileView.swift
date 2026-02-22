@@ -8,16 +8,23 @@ struct ProfileView: View {
     @State private var showResetAlert: Bool = false
 
     private var profile: UserProfile? { profiles.first }
-
     private var completedCount: Int { dreams.filter(\.isCompleted).count }
     private var activeCount: Int { dreams.filter { !$0.isCompleted }.count }
+
+    private var streakDays: Int {
+        guard !dreams.isEmpty else { return 0 }
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let memberDays = calendar.dateComponents([.day], from: dreams.map(\.createdAt).min() ?? today, to: today).day ?? 0
+        return max(memberDays, 1)
+    }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
                     avatarSection
-                    statsSection
+                    statsGrid
                     if let profile, !profile.skills.isEmpty { skillsSection(profile: profile) }
                     if let profile, !profile.interests.isEmpty { interestsSection(profile: profile) }
                     actionsSection
@@ -32,23 +39,23 @@ struct ProfileView: View {
         VStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(colors: [.indigo, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
+                    .fill(Color.primary.opacity(0.08))
                     .frame(width: 88, height: 88)
 
                 Text(initials)
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundStyle(.primary)
             }
 
-            Text(profile?.name ?? "User")
-                .font(.title2.bold())
+            VStack(spacing: 4) {
+                Text(profile?.name ?? "User")
+                    .font(.title2.bold())
 
-            if let profile {
-                Text("Age \(profile.age) \u{2022} Member since \(profile.createdAt.formatted(.dateTime.month(.wide).year()))")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                if let profile {
+                    Text("Age \(profile.age) · Since \(profile.createdAt.formatted(.dateTime.month(.wide).year()))")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .frame(maxWidth: .infinity)
@@ -64,18 +71,27 @@ struct ProfileView: View {
         return String(name.prefix(2)).uppercased()
     }
 
-    private var statsSection: some View {
-        HStack(spacing: 12) {
-            StatCard(value: "\(dreams.count)", label: "Total", icon: "star.fill", color: .indigo)
-            StatCard(value: "\(activeCount)", label: "Active", icon: "flame.fill", color: .orange)
-            StatCard(value: "\(completedCount)", label: "Done", icon: "checkmark.seal.fill", color: .green)
+    private var statsGrid: some View {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+            ProfileStatCard(value: "\(dreams.count)", label: "Total Dreams", icon: "book.fill")
+            ProfileStatCard(value: "\(activeCount)", label: "In Progress", icon: "flame.fill")
+            ProfileStatCard(value: "\(completedCount)", label: "Completed", icon: "checkmark.seal.fill")
+            ProfileStatCard(value: "\(streakDays)", label: "Days Active", icon: "calendar")
         }
     }
 
     private func skillsSection(profile: UserProfile) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Skills", systemImage: "star.circle.fill")
-                .font(.headline)
+            HStack(spacing: 6) {
+                Image(systemName: "star.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("Skills")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+            }
 
             FlowLayout(spacing: 8) {
                 ForEach(profile.skills, id: \.self) { skill in
@@ -83,8 +99,7 @@ struct ProfileView: View {
                         .font(.subheadline)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 7)
-                        .background(Color.indigo.opacity(0.1), in: .capsule)
-                        .foregroundStyle(.indigo)
+                        .background(Color(.tertiarySystemFill), in: .capsule)
                 }
             }
         }
@@ -95,8 +110,16 @@ struct ProfileView: View {
 
     private func interestsSection(profile: UserProfile) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Interests", systemImage: "heart.circle.fill")
-                .font(.headline)
+            HStack(spacing: 6) {
+                Image(systemName: "heart.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("Interests")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+            }
 
             FlowLayout(spacing: 8) {
                 ForEach(profile.interests, id: \.self) { interest in
@@ -104,8 +127,7 @@ struct ProfileView: View {
                         .font(.subheadline)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 7)
-                        .background(Color.purple.opacity(0.1), in: .capsule)
-                        .foregroundStyle(.purple)
+                        .background(Color(.tertiarySystemFill), in: .capsule)
                 }
             }
         }
@@ -146,19 +168,18 @@ struct ProfileView: View {
     }
 }
 
-struct StatCard: View {
+struct ProfileStatCard: View {
     let value: String
     let label: String
     let icon: String
-    let color: Color
 
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(color)
+                .font(.body)
+                .foregroundStyle(.secondary)
             Text(value)
-                .font(.title2.bold())
+                .font(.title2.bold().monospacedDigit())
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)

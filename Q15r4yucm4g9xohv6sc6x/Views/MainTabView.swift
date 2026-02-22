@@ -5,19 +5,19 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            Tab("Dreams", systemImage: "star.fill", value: 0) {
+            Tab("Notebook", systemImage: "book.fill", value: 0) {
                 DreamsView()
             }
-            Tab("Discover", systemImage: "sparkles", value: 1) {
+            Tab("Insights", systemImage: "brain.head.profile.fill", value: 1) {
                 DiscoverView()
             }
-            Tab("Chat", systemImage: "bubble.left.and.bubble.right.fill", value: 2) {
+            Tab("Assistant", systemImage: "sparkles", value: 2) {
                 ChatView()
             }
             Tab("Profile", systemImage: "person.crop.circle.fill", value: 3) {
                 ProfileView()
             }
         }
-        .tint(.indigo)
+        .tint(.primary)
     }
 }

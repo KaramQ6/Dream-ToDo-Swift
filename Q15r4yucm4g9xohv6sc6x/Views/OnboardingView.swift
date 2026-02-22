@@ -36,13 +36,21 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            backgroundView
+            Color(.systemBackground)
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 if step > 0 && step < 5 {
-                    progressBar
-                        .padding(.top, 16)
-                        .transition(.opacity)
+                    HStack(spacing: 6) {
+                        ForEach(1..<5) { i in
+                            Capsule()
+                                .fill(i <= step ? Color.primary : Color(.tertiarySystemFill))
+                                .frame(height: 3)
+                        }
+                    }
+                    .padding(.horizontal, 32)
+                    .padding(.top, 16)
+                    .transition(.opacity)
                 }
 
                 Spacer()
@@ -76,83 +84,53 @@ struct OnboardingView: View {
         .animation(.spring(duration: 0.5, bounce: 0.2), value: step)
     }
 
-    private var backgroundView: some View {
-        MeshGradient(width: 3, height: 3, points: [
-            [0, 0], [0.5, 0], [1, 0],
-            [0, 0.5], [0.5, 0.5], [1, 0.5],
-            [0, 1], [0.5, 1], [1, 1]
-        ], colors: [
-            .indigo.opacity(0.3), .purple.opacity(0.2), .blue.opacity(0.15),
-            .indigo.opacity(0.15), .purple.opacity(0.1), .indigo.opacity(0.2),
-            .blue.opacity(0.1), .indigo.opacity(0.15), .purple.opacity(0.25)
-        ])
-        .ignoresSafeArea()
-        .overlay {
-            Color(.systemBackground).opacity(0.7)
-                .ignoresSafeArea()
-        }
-    }
-
-    private var progressBar: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color(.tertiarySystemFill))
-                Capsule()
-                    .fill(
-                        LinearGradient(colors: [.indigo, .purple], startPoint: .leading, endPoint: .trailing)
-                    )
-                    .frame(width: geo.size.width * CGFloat(step) / 4.0)
-                    .animation(.spring(duration: 0.4), value: step)
-            }
-        }
-        .frame(height: 4)
-        .padding(.horizontal, 32)
-    }
-
     private var welcomeStep: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 72))
-                .foregroundStyle(
-                    LinearGradient(colors: [.indigo, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
-                )
-                .symbolEffect(.pulse, options: .repeating)
-                .padding(.bottom, 8)
+        VStack(spacing: 24) {
+            ZStack {
+                Circle()
+                    .fill(Color.primary.opacity(0.06))
+                    .frame(width: 120, height: 120)
 
-            Text("Dream")
-                .font(.system(size: 52, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(colors: [.indigo, .purple], startPoint: .leading, endPoint: .trailing)
-                )
+                Image(systemName: "book.closed.fill")
+                    .font(.system(size: 52))
+                    .foregroundStyle(.primary)
+                    .symbolEffect(.pulse, options: .repeating)
+            }
+            .padding(.bottom, 8)
 
-            Text("Your personal dream companion.\nDiscover, plan, and achieve\nyour biggest aspirations.")
-                .font(.title3)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
+            VStack(spacing: 12) {
+                Text("DreamBook")
+                    .font(.system(size: 42, weight: .bold))
+
+                Text("Your intelligent dream notebook.\nCapture, analyze, and understand\nyour aspirations.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+            }
         }
         .padding(.horizontal, 32)
     }
 
     private var nameStep: some View {
         VStack(spacing: 24) {
-            Image(systemName: "person.crop.circle")
-                .font(.system(size: 56))
-                .foregroundStyle(.indigo)
+            Image(systemName: "person.text.rectangle")
+                .font(.system(size: 48))
+                .foregroundStyle(.primary)
 
-            Text("What should I call you?")
-                .font(.title.bold())
-                .multilineTextAlignment(.center)
+            VStack(spacing: 8) {
+                Text("What's your name?")
+                    .font(.title.bold())
 
-            Text("Let's get to know each other")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                Text("Let's personalize your experience")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
 
             TextField("Your name", text: $name)
                 .font(.title3)
                 .padding(16)
-                .background(Color(.secondarySystemBackground), in: .rect(cornerRadius: 16))
+                .background(Color(.secondarySystemBackground), in: .rect(cornerRadius: 14))
                 .padding(.horizontal, 32)
                 .textContentType(.givenName)
                 .submitLabel(.continue)
@@ -162,16 +140,18 @@ struct OnboardingView: View {
 
     private var ageStep: some View {
         VStack(spacing: 24) {
-            Image(systemName: "calendar.circle")
-                .font(.system(size: 56))
-                .foregroundStyle(.indigo)
+            Image(systemName: "calendar")
+                .font(.system(size: 48))
+                .foregroundStyle(.primary)
 
-            Text("How old are you?")
-                .font(.title.bold())
+            VStack(spacing: 8) {
+                Text("How old are you?")
+                    .font(.title.bold())
 
-            Text("This helps us personalize your experience")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                Text("This helps tailor recommendations")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
 
             Picker("Age", selection: $age) {
                 ForEach(10...80, id: \.self) { value in
@@ -186,22 +166,23 @@ struct OnboardingView: View {
 
     private var skillsStep: some View {
         VStack(spacing: 20) {
-            Image(systemName: "star.circle")
-                .font(.system(size: 56))
-                .foregroundStyle(.indigo)
+            Image(systemName: "star.fill")
+                .font(.system(size: 48))
+                .foregroundStyle(.primary)
 
-            Text("What are your superpowers?")
-                .font(.title.bold())
-                .multilineTextAlignment(.center)
+            VStack(spacing: 8) {
+                Text("Your strengths")
+                    .font(.title.bold())
 
-            Text("Select skills you have or want to develop")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                Text("Select skills you have or want to develop")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
 
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
                     ForEach(availableSkills, id: \.self) { skill in
-                        ChipButton(
+                        OnboardingChip(
                             title: skill,
                             isSelected: selectedSkills.contains(skill)
                         ) {
@@ -221,21 +202,23 @@ struct OnboardingView: View {
 
     private var interestsStep: some View {
         VStack(spacing: 20) {
-            Image(systemName: "heart.circle")
-                .font(.system(size: 56))
-                .foregroundStyle(.indigo)
+            Image(systemName: "heart.fill")
+                .font(.system(size: 48))
+                .foregroundStyle(.primary)
 
-            Text("What excites you?")
-                .font(.title.bold())
+            VStack(spacing: 8) {
+                Text("What excites you?")
+                    .font(.title.bold())
 
-            Text("Pick your passions and interests")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                Text("Pick your passions and interests")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
 
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
                     ForEach(availableInterests, id: \.self) { interest in
-                        ChipButton(
+                        OnboardingChip(
                             title: interest,
                             isSelected: selectedInterests.contains(interest)
                         ) {
@@ -256,24 +239,25 @@ struct OnboardingView: View {
     private var completionStep: some View {
         VStack(spacing: 24) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 80))
+                .font(.system(size: 72))
                 .foregroundStyle(.green)
                 .symbolEffect(.bounce, value: step == 5)
 
-            Text("You're all set, \(name)!")
-                .font(.title.bold())
-                .multilineTextAlignment(.center)
+            VStack(spacing: 8) {
+                Text("Ready, \(name)")
+                    .font(.title.bold())
 
-            Text("We've crafted personalized dream\nsuggestions just for you.")
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
+                Text("Your notebook is personalized.\nLet's start capturing your dreams.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+            }
 
-            HStack(spacing: 24) {
-                StatPill(value: "\(selectedSkills.count)", label: "Skills")
-                StatPill(value: "\(selectedInterests.count)", label: "Interests")
-                StatPill(value: "\(age)", label: "Age")
+            HStack(spacing: 20) {
+                OnboardingStatPill(value: "\(selectedSkills.count)", label: "Skills")
+                OnboardingStatPill(value: "\(selectedInterests.count)", label: "Interests")
+                OnboardingStatPill(value: "\(age)", label: "Age")
             }
             .padding(.top, 8)
         }
@@ -285,15 +269,10 @@ struct OnboardingView: View {
         } label: {
             Text(step == 0 ? "Get Started" : "Continue")
                 .font(.headline)
-                .foregroundStyle(.white)
+                .foregroundStyle(canContinue ? Color(.systemBackground) : .secondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(
-                    canContinue
-                    ? LinearGradient(colors: [.indigo, .purple], startPoint: .leading, endPoint: .trailing)
-                    : LinearGradient(colors: [.gray, .gray], startPoint: .leading, endPoint: .trailing),
-                    in: .capsule
-                )
+                .background(canContinue ? Color.primary : Color(.tertiarySystemFill), in: .capsule)
         }
         .disabled(!canContinue)
         .padding(.horizontal, 32)
@@ -305,18 +284,15 @@ struct OnboardingView: View {
             completeOnboarding()
         } label: {
             HStack {
-                Text("Start Dreaming")
+                Text("Open Notebook")
                     .font(.headline)
                 Image(systemName: "arrow.right")
                     .font(.headline)
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(Color(.systemBackground))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(
-                LinearGradient(colors: [.indigo, .purple], startPoint: .leading, endPoint: .trailing),
-                in: .capsule
-            )
+            .background(Color.primary, in: .capsule)
         }
         .padding(.horizontal, 32)
         .sensoryFeedback(.success, trigger: step)
@@ -340,7 +316,7 @@ struct OnboardingView: View {
     }
 }
 
-struct ChipButton: View {
+struct OnboardingChip: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
@@ -353,14 +329,14 @@ struct ChipButton: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .frame(maxWidth: .infinity)
-                .background(isSelected ? Color.indigo : Color(.tertiarySystemBackground), in: .capsule)
-                .foregroundStyle(isSelected ? .white : .primary)
+                .background(isSelected ? Color.primary : Color(.tertiarySystemBackground), in: .capsule)
+                .foregroundStyle(isSelected ? Color(.systemBackground) : .primary)
         }
         .sensoryFeedback(.selection, trigger: isSelected)
     }
 }
 
-struct StatPill: View {
+struct OnboardingStatPill: View {
     let value: String
     let label: String
 
@@ -368,7 +344,6 @@ struct StatPill: View {
         VStack(spacing: 4) {
             Text(value)
                 .font(.title2.bold())
-                .foregroundStyle(.indigo)
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)
